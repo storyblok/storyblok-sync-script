@@ -8,6 +8,8 @@
 Make sure you've node `>= 5.11.0` installed.
 
 ```
+$ git clone https://github.com/storyblok/storyblok-sync-script.git
+$ cd storyblok-sync-script
 $ npm i
 ```
 
