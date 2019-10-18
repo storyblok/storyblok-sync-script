@@ -3,9 +3,6 @@ const StoryblokClient = require('storyblok-js-client')
 const Sync = {
   targetComponents: [],
   sourceComponents: [],
-  existingFolders: [],
-  componentsCount: 0,
-  componentsSynced: 0,
 
   init(options) {
     this.sourceSpaceId = options.source
@@ -123,15 +120,14 @@ const Sync = {
         console.log(`Folder ${folder.name} already exists`)
       }
     }
-
-    this.existingFolders = await this.client.get(`spaces/${this.targetSpaceId}/stories`, {
-      folder_only: 1,
-      per_page: 1000,
-      sort_by: 'slug:asc'
-    })
   },
 
   async syncRoles() {
+    let existingFolders = await this.client.getAll(`spaces/${this.targetSpaceId}/stories`, {
+      folder_only: 1,
+      sort_by: 'slug:asc'
+    })
+
     let roles = await this.client.get(`spaces/${this.sourceSpaceId}/space_roles`)
     let existingRoles = await this.client.get(`spaces/${this.targetSpaceId}/space_roles`)
 
@@ -143,7 +139,7 @@ const Sync = {
       space_role.allowed_paths = []
 
       space_role.resolved_allowed_paths.forEach((path) => {
-        let folders = this.existingFolders.data.stories.filter((story) => {
+        let folders = existingFolders.filter((story) => {
           return story.full_slug + '/' == path
         })
 
@@ -207,6 +203,7 @@ const Sync = {
 }
 
 exports.handler = async function (event, context) {
+  console.log(`Executing command ${event.options.command}`)
   Sync.init(event.options)
   await Sync[event.options.command]()
 
